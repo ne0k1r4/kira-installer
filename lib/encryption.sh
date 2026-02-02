@@ -133,3 +133,4 @@ encryption_format() {
     export ROOT_MAPPER SWAP_MAPPER HOME_MAPPER ENCRYPTED_PART
     log "INFO" "The vaults are locked and formatted successfully, Lord Kira."
 }
+# luks fix
