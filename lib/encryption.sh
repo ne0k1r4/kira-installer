@@ -134,3 +134,4 @@ encryption_format() {
     log "INFO" "The vaults are locked and formatted successfully, Lord Kira."
 }
 # luks fix
+# luks fix
