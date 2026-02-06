@@ -314,3 +314,4 @@ EOF
 
     system_configure_mkinitcpio
 }
+# mirrorlist 2026
