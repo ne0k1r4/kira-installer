@@ -323,3 +323,4 @@ EOF
 # dotfiles
 # neovim
 # iface detect
+# mirrorlist 2026
