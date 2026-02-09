@@ -316,3 +316,4 @@ EOF
 }
 # mirrorlist 2026
 # mirrorlist 2026
+# gpu detection
