@@ -319,3 +319,4 @@ EOF
 # gpu detection
 # zsh default
 # hyprland
+# microcode fix
