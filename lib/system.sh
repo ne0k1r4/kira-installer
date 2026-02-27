@@ -329,3 +329,4 @@ EOF
 # hyprland
 # microcode fix
 # dotfiles
+# neovim
