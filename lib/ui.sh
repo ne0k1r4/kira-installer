@@ -185,3 +185,4 @@ Preseed variables:
     NO_CONFIRM          true (skip disk confirmation)
 EOF
 }
+# whiptail fix
