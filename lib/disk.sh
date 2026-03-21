@@ -139,3 +139,4 @@ disk_mount() {
 # lvm fix
 # partition refresh
 # swap skip
+# lvm fix
