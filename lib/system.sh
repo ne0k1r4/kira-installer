@@ -11,20 +11,20 @@ system_detect_gpu() {
     
     if echo "$devices" | grep -q "nvidia"; then
         GPU_DRIVERS+=("nvidia" "nvidia-utils")
-        log "INFO" "Detected NVIDIA GPU drivers"
+        log "INFO" "Shinigami Eyes spotted an NVIDIA GPU! Preparing proprietary drivers..."
     fi
     if echo "$devices" | grep -q "amd"; then
         GPU_DRIVERS+=("xf86-video-amdgpu" "vulkan-radeon")
-        log "INFO" "Detected AMD GPU drivers"
+        log "INFO" "Shinigami Eyes spotted an AMD GPU! Preparing Radeon packages..."
     fi
     if echo "$devices" | grep -q "intel"; then
         GPU_DRIVERS+=("xf86-video-intel" "vulkan-intel")
-        log "INFO" "Detected Intel GPU drivers"
+        log "INFO" "Shinigami Eyes spotted an Intel GPU! Preparing internal graphics modules..."
     fi
     
     if [ ${#GPU_DRIVERS[@]} -eq 0 ]; then
         GPU_DRIVERS=("mesa")
-        log "INFO" "No specific GPU vendor detected, using mesa"
+        log "INFO" "No specific GPU signature detected. Defaulting to standard Mesa drivers."
     fi
     export GPU_DRIVERS
 }
@@ -47,17 +47,17 @@ system_install_base() {
     
     if [ ! -d /sys/firmware/efi ]; then
         packages+=("grub")
-        log "INFO" "Adding GRUB package for BIOS boot"
+        log "INFO" "Enabling GRUB boot package for standard BIOS boot."
     fi
     
     if [ "${INSTALL_MODE:-single}" = "dual" ]; then
         packages+=("os-prober")
-        log "INFO" "Adding os-prober for dual boot detection"
+        log "INFO" "Os-prober included to search for other partition souls."
     fi
     
     packages+=("networkmanager" "hyprland" "kitty" "waybar" "wofi" "xdg-desktop-portal-hyprland" "sddm" "qt5-wayland" "qt6-wayland" "polkit-kde-agent")
     
-    log "INFO" "Installing packages: ${packages[*]}"
+    log "INFO" "Misa is pacstrapping base packages: ${packages[*]}. Grab a potato chip and eat it! 🥔"
     execute pacstrap /mnt "${packages[@]}"
 }
 
@@ -87,7 +87,7 @@ system_configure_mkinitcpio() {
 # ======================================================================
 system_configure() {
     if [ "${DRY_RUN:-false}" = "true" ]; then
-        log "INFO" "[DRY RUN] Would configure system identities, users, passwords, and mkinitcpio"
+        log "INFO" "[DRY RUN] Simulation mode: Skipping user registration, locale build, and mkinitcpio..."
         return 0
     fi
 
@@ -106,7 +106,7 @@ EOF
     elif [ -f /etc/timezone ]; then
         timezone=$(cat /etc/timezone || echo "UTC")
     fi
-    log "INFO" "Auto-detected host timezone: $timezone"
+    log "INFO" "Spotted host location: $timezone. Injecting it to the new realm."
 
     chroot_exec "/mnt" "
         ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
@@ -146,7 +146,7 @@ input {
     }
 }
 
-# General window decoration (Misa Hot-Pink Theme!)
+# Misa's hot-pink aesthetic borders! Pink borders represent our absolute bond.
 general {
     gaps_in = 5
     gaps_out = 10
@@ -191,7 +191,7 @@ misc {
     background_color = 0x11111b
 }
 
-# Keybindings
+# Kira's master keybindings
 $mainMod = SUPER
 
 bind = $mainMod, Q, exec, kitty
@@ -309,7 +309,7 @@ EOF
             sed -i '/^Color/a ILoveCandy' /mnt/etc/pacman.conf
         fi
         sed -i 's/^#ParallelDownloads.*/ParallelDownloads = 5/' /mnt/etc/pacman.conf
-        log "INFO" "Optimized pacman.conf (Color, ParallelDownloads = 5, ILoveCandy)"
+        log "INFO" "Sweetened target pacman.conf! Activated ParallelDownloads=5, Color, and ILoveCandy! 🍬"
     fi
 
     system_configure_mkinitcpio

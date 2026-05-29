@@ -60,7 +60,7 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 cleanup_on_exit() {
     local exit_code=$?
     if [ $exit_code -ne 0 ]; then
-        log "ERROR" "Installation failed with code $exit_code! Cleaning up..."
+        log "ERROR" "An interruption occurred (exit code $exit_code)! Unwinding structures and closing vaults..."
         if [ "${DRY_RUN:-false}" != "true" ]; then
             umount -R /mnt 2>/dev/null || true
             vgchange -an vg0 2>/dev/null || true
@@ -68,7 +68,7 @@ cleanup_on_exit() {
             cryptsetup close cryptlvm 2>/dev/null || true
         fi
     else
-        log "INFO" "Installation completed successfully"
+        log "INFO" "All operations successfully completed. Clean exit."
     fi
 }
 trap cleanup_on_exit EXIT
@@ -80,7 +80,7 @@ export VERSION LOG_FILE STATE_DIR DRY_RUN
 # ======================================================================
 load_preseed() {
     if [ -f "$PRESEED_FILE" ]; then
-        log "INFO" "Loading preseed from $PRESEED_FILE"
+        log "INFO" "Discovered preseed configuration page at $PRESEED_FILE"
         source "$PRESEED_FILE"
         
         INSTALL_MODE="${INSTALL_MODE:-single}"
@@ -95,7 +95,7 @@ load_preseed() {
         [ -n "${SWAP_SIZE:-}" ] && export SWAP_SIZE
         [ -n "${ROOT_SIZE:-}" ] && export ROOT_SIZE
         
-        log "INFO" "Preseed loaded: Mode=$INSTALL_MODE, Disk=${SELECTED_DISK:-auto}, Encryption=$ENCRYPTION"
+        log "INFO" "Loaded settings: Mode=$INSTALL_MODE, Disk=${SELECTED_DISK:-auto}, Vault=$ENCRYPTION"
         return 0
     fi
     return 1
@@ -106,22 +106,22 @@ load_preseed() {
 # ======================================================================
 validate_encryption_value() {
     case "$1" in none|luks2|luks2+lvm) return 0 ;; *)
-        log "ERROR" "Invalid ENCRYPTION: $1 (must be none, luks2, or luks2+lvm)"
+        log "ERROR" "Invalid ENCRYPTION mode: $1 (Misa only understands: none, luks2, or luks2+lvm)"
         return 1 ;;
     esac
 }
 
 validate_required_vars() {
     local missing=0
-    [ -z "${USERNAME:-}" ] && log "ERROR" "USERNAME required" && missing=1
-    [ -z "${HOSTNAME:-}" ] && log "ERROR" "HOSTNAME required" && missing=1
-    [ -z "${INSTALL_MODE:-}" ] && log "ERROR" "INSTALL_MODE required" && missing=1
+    [ -z "${USERNAME:-}" ] && log "ERROR" "Master Username is missing!" && missing=1
+    [ -z "${HOSTNAME:-}" ] && log "ERROR" "Realm Hostname is missing!" && missing=1
+    [ -z "${INSTALL_MODE:-}" ] && log "ERROR" "Installation Mode is missing!" && missing=1
     
     ENCRYPTION="${ENCRYPTION:-none}"
     validate_encryption_value "$ENCRYPTION" || missing=1
     
     if [ "$ENCRYPTION" != "none" ] && [ -z "${CRYPT_PASS:-}" ] && [ "${AUTO:-false}" = "true" ]; then
-        log "ERROR" "Encryption enabled but CRYPT_PASS not set in preseed (AUTO mode)"
+        log "ERROR" "Encryption enabled but CRYPT_PASS is missing in preseed (AUTO mode)"
         missing=1
     fi
     
@@ -137,30 +137,30 @@ validate_required_vars() {
 # ======================================================================
 test_network() {
     if [ "${DRY_RUN:-false}" = "true" ]; then
-        log "INFO" "[DRY RUN] Bypassing network connectivity test"
+        log "INFO" "[DRY RUN] Skipping network probe inside sandbox."
         return 0
     fi
     while true; do
-        log "INFO" "Testing network connectivity..."
+        log "INFO" "Misa is probing the internet gateway..."
 
         if command -v ping &>/dev/null; then
             if ping -c 1 archlinux.org &>/dev/null; then
-                log "INFO" "Network connectivity confirmed"
+                log "INFO" "Network connection confirmed! Reaching archlinux.org."
                 return 0
             fi
         fi
 
         if curl -s --max-time 5 https://archlinux.org >/dev/null; then
-            log "INFO" "Network connectivity confirmed via curl"
+            log "INFO" "Network connection confirmed via curl."
             return 0
         fi
 
-        log "WARNING" "No internet connection detected"
+        log "WARNING" "Oh no! No internet connection detected."
 
-        if whiptail --yesno "Network connection not detected.\n\nRetry connection?" 10 60; then
-            log "INFO" "Retrying network test..."
+        if whiptail --yesno "Lord Kira, I can't reach the network servers! Did Ryuk chew on the ethernet line?\n\nWould you like me to try probing again?" 10 60; then
+            log "INFO" "Probing connection again..."
         else
-            log "ERROR" "Installation requires internet connection."
+            log "ERROR" "Cannot proceed without a network connection. Task aborted."
             return 1
         fi
     done
@@ -183,11 +183,11 @@ main() {
         INSTALL_MODE="single"
         export INSTALL_MODE
     fi
-    log "INFO" "Installation mode: $INSTALL_MODE"
+    log "INFO" "Realm deployment mode: $INSTALL_MODE"
     
     if [ -n "${SELECTED_DISK:-}" ]; then
         if ! disk_validate "$SELECTED_DISK"; then
-            log "WARNING" "Preseeded disk validation failed. Resetting SELECTED_DISK."
+            log "WARNING" "Preseeded target validation failed. Resetting target selection."
             unset SELECTED_DISK
         fi
     fi
@@ -198,46 +198,40 @@ main() {
     # Preseed override — ensure ENCRYPTION has a safe default
     ENCRYPTION="${ENCRYPTION:-none}"
     if [ "$ENCRYPTION" != "none" ] && [ -z "${CRYPT_PASS:-}" ]; then
-        log "INFO" "Using preseed encryption: $ENCRYPTION"
-        get_password_confirm "Encryption passphrase" CRYPT_PASS
+        log "INFO" "Using preseeded encryption profile: $ENCRYPTION"
+        get_password_confirm "Enter Encryption Passphrase" CRYPT_PASS
         export CRYPT_PASS
     fi
     export ENCRYPTION
 
     if [ "${AUTO:-false}" = "true" ] && [ -n "${SELECTED_DISK:-}" ]; then
-        log "INFO" "AUTO mode enabled, skipping menu."
+        log "INFO" "AUTO mode enabled. Bypassing interactive menus."
     else
         while true; do
-            clear
-            echo "╔══════════════════════════════╗"
-            echo "║      KIRA INSTALLER          ║"
-            echo "╠══════════════════════════════╣"
-            echo "║ 1. Install Arch Linux        ║"
-            echo "║ 2. Disk Setup                ║"
-            echo "║ 3. Encryption (LUKS)         ║"
-            echo "║ 4. Exit                      ║"
-            echo "╚══════════════════════════════╝"
-            echo ""
-            read -r -p "Select option: " choice
+            local choice
+            choice=$(whiptail --title "📓 Misa's Devotion: Main Menu 📓" --menu "Select your next action, Lord Kira:" 15 60 4 \
+                "1" "Build Kira's New World (Install Arch)" \
+                "2" "Choose Target Disk (Select Device)" \
+                "3" "Configure Shinigami Vault (Encryption)" \
+                "4" "Abandon the Notebook (Exit)" 3>&1 1>&2 2>&3) || choice="4"
             
             case "$choice" in
-                1)
+                "1")
                     if [ -z "${SELECTED_DISK:-}" ]; then
-                        echo "ERROR: Please complete Disk Setup prior to installation."
-                        sleep 2
+                        whiptail --msgbox "Error: You must assign a Target Disk before building the world!" 8 60
                         continue
                     fi
                     break
                     ;;
-                2)
+                "2")
                     local valid_disks
                     valid_disks=$(lsblk -d -n -o NAME | grep -v -E "loop|sr|rom" | tr '\n' ' ')
                     local target
-                    target=$(ui_input "Available disks: $valid_disks\nEnter target disk (/dev/sdX):" "")
+                    target=$(ui_input "Available disks: $valid_disks\nEnter target disk (e.g. /dev/sda):" "")
                     if [ -n "$target" ]; then
                         if disk_validate "$target"; then
                             if [ "${NO_CONFIRM:-false}" != "true" ]; then
-                                if ui_yesno "WARNING: This will DESTROY ALL DATA on $target. Continue?"; then
+                                if ui_yesno "⚠️ WARNING: This will WIPE ALL DATA on $target. Purge this disk?"; then
                                     SELECTED_DISK="$target"
                                     export SELECTED_DISK
                                 fi
@@ -245,31 +239,25 @@ main() {
                                 SELECTED_DISK="$target"
                                 export SELECTED_DISK
                             fi
-                        else
-                            sleep 2
                         fi
                     fi
                     ;;
-                3)
+                "3")
                     encryption_setup
                     ;;
-                4)
+                "4"|*)
                     echo "Exiting..."
                     exit 0
-                    ;;
-                *)
-                    echo "Invalid option."
-                    sleep 1
                     ;;
             esac
         done
     fi
     
-    [ -z "${HOSTNAME:-}" ] && HOSTNAME=$(ui_input "Hostname" "kira-arch") && export HOSTNAME
-    [ -z "${USERNAME:-}" ] && USERNAME=$(ui_input "Username" "") && export USERNAME
+    [ -z "${HOSTNAME:-}" ] && HOSTNAME=$(ui_input "What name shall we give this new realm? (Hostname)" "kira-arch") && export HOSTNAME
+    [ -z "${USERNAME:-}" ] && USERNAME=$(ui_input "Under what master identity shall you rule? (Username)" "") && export USERNAME
     
     if [ -z "${USERPASS:-}" ]; then
-        get_password_confirm "User password" USERPASS
+        get_password_confirm "Enter password for root/user" USERPASS
         export USERPASS
     fi
     
@@ -281,38 +269,38 @@ main() {
     
     export UI_ACTIVE=true
     (
-        ui_progress 10 "Creating partitions..."
+        ui_progress 10 "Misa is carving partition spaces... 👁️"
         disk_partition >> "$LOG_FILE" 2>&1
         
-        ui_progress 20 "Optimizing pacman mirrors..."
+        ui_progress 20 "Mirror sweep: locating sweet and fast mirrors... 🍬"
         ui_optimize_mirrors >> "$LOG_FILE" 2>&1
         
-        ui_progress 30 "Formatting and setting up encryption..."
+        ui_progress 30 "LUKS encryption: forging the vaults... 🔐"
         encryption_format >> "$LOG_FILE" 2>&1
         
-        ui_progress 45 "Mounting partitions..."
+        ui_progress 45 "Mounting workspaces: attaching layout directories..."
         disk_mount >> "$LOG_FILE" 2>&1
         
-        ui_progress 55 "Installing base system (this may take a few minutes)..."
+        ui_progress 55 "Installing packages... Grab a potato chip! 🥔 (this might take a few minutes)"
         system_install_base >> "$LOG_FILE" 2>&1
         
-        ui_progress 75 "Generating fstab..."
+        ui_progress 75 "Constructing layout configurations (writing fstab indexes)..."
         if [ "${DRY_RUN:-false}" = "true" ]; then
             log "INFO" "[DRY RUN] Would execute: genfstab -U /mnt >> /mnt/etc/fstab"
         else
             execute genfstab -U /mnt >> /mnt/etc/fstab 2>> "$LOG_FILE"
         fi
         
-        ui_progress 85 "Configuring system..."
+        ui_progress 85 "Reforming environment details (locales, hostname, users)..."
         system_configure >> "$LOG_FILE" 2>&1
         
-        ui_progress 95 "Installing bootloader..."
+        ui_progress 95 "Installing bootloader: summoning systemd-boot/GRUB... 👑"
         bootloader_install >> "$LOG_FILE" 2>&1
         
-        ui_progress 98 "Finalizing installation..."
+        ui_progress 98 "Polishing directories and clearing temporary secrets..."
         clear_passwords >> "$LOG_FILE" 2>&1
         
-        ui_progress 100 "Installation complete!"
+        ui_progress 100 "Kira's world is constructed! Complete! 🎉"
     ) 3>&1 | ui_progress_pipe "Installation Progress"
     export UI_ACTIVE=false
     
@@ -323,7 +311,7 @@ main() {
 # START
 # ======================================================================
 if [ "$EUID" -ne 0 ]; then
-    echo "Even Kira needs root privileges. Run with sudo."
+    echo "Even Kira needs root privileges to build a new world. Run with sudo."
     exit 1
 fi
 
