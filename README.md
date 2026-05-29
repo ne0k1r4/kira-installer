@@ -50,7 +50,7 @@ ping archlinux.org -c 3
 ### 2. Procure the Notebook
 Clone the script repository to download the files:
 ```bash
-git clone https://github.com/jhjmhgKGON/555.git kira-installer
+git clone https://github.com/ne0k1r4/kira-installer.git
 cd kira-installer
 chmod +x kira.sh
 ```
@@ -81,11 +81,12 @@ sudo ./kira.sh --preseed preseed/production.conf
 Every component is modular, working under your master commands:
 
 * [kira.sh](file:///home/LIGHT/dev/projects/kira-installer/kira.sh) — **Kira's Will** (Master orchestration, validation, and FD 3 updates).
-* [lib/ui.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/ui.sh) — **Misa's Face** (ASCII menu layouts, dialogs, and progress bars).
-* [lib/disk.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/disk.sh) — **The Notebook** (Wiping blocks, partition table writes, and mounting).
-* [lib/encryption.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/encryption.sh) — **The Hidden Desk Drawer** (LUKS2 argon2id encryption & LVM logic).
-* [lib/system.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/system.sh) — **Misa's Diary** (Dynamic timezone matching, user setup, base packages, and pacman configurations).
-* [lib/bootloader.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/bootloader.sh) — **The Shinigami Deal** (Grants systemd-boot for UEFI systems or GRUB for BIOS).
+* [lib/common.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/common.sh) — **The Ledger** (Gothic colored console logger logs, retries, and secure password prompts).
+* [lib/ui.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/ui.sh) — **The Face** (Gothic Whiptail interface, welcome banners, choice menus, and progress gauge).
+* [lib/disk.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/disk.sh) — **The Scythe** (Drawing partition slices, clearing block memories, and mounting workspaces).
+* [lib/encryption.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/encryption.sh) — **The Vault** (Stealthy LUKS2 + LVM physical volume configuration).
+* [lib/system.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/system.sh) — **The Pulse** (TimeZone auto-detection, user setup, SDDM and Hyprland sweet layouts).
+* [lib/bootloader.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/bootloader.sh) — **The Crown** (Bootctl and GRUB configurations).
 
 ---
 
