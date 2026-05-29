@@ -55,7 +55,7 @@ system_install_base() {
         log "INFO" "Adding os-prober for dual boot detection"
     fi
     
-    packages+=("networkmanager")
+    packages+=("networkmanager" "hyprland" "kitty" "waybar" "wofi" "xdg-desktop-portal-hyprland" "sddm" "qt5-wayland" "qt6-wayland" "polkit-kde-agent")
     
     log "INFO" "Installing packages: ${packages[*]}"
     execute pacstrap /mnt "${packages[@]}"
@@ -115,6 +115,7 @@ EOF
         locale-gen
         echo 'LANG=en_US.UTF-8' > /etc/locale.conf
         systemctl enable NetworkManager
+        systemctl enable sddm
     "
 
     # Set passwords and create user outside heredoc to expand correctly
@@ -123,6 +124,137 @@ EOF
     echo "${USERNAME}:${USERPASS}" | arch-chroot /mnt chpasswd
     echo '%wheel ALL=(ALL:ALL) ALL' > /mnt/etc/sudoers.d/10-wheel
     chmod 440 /mnt/etc/sudoers.d/10-wheel
+
+    # Create user home configs for Hyprland
+    local user_home="/mnt/home/${USERNAME}"
+    if [ -d "$user_home" ]; then
+        mkdir -p "$user_home/.config/hypr"
+        cat > "$user_home/.config/hypr/hyprland.conf" << 'EOF'
+# Monitor configuration
+monitor=,preferred,auto,1
+
+# Execute at launch
+exec-once = waybar
+exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+
+# Input configuration
+input {
+    kb_layout = us
+    follow_mouse = 1
+    touchpad {
+        natural_scroll = false
+    }
+}
+
+# General window decoration (Misa Hot-Pink Theme!)
+general {
+    gaps_in = 5
+    gaps_out = 10
+    border_size = 2
+    col.active_border = rgba(ff69b4ee) rgba(ff1493ee) 45deg
+    col.inactive_border = rgba(595959aa)
+    layout = dwindle
+}
+
+decoration {
+    rounding = 10
+    blur {
+        enabled = true
+        size = 3
+        passes = 1
+    }
+    drop_shadow = true
+    shadow_range = 4
+    shadow_render_power = 3
+    col.shadow = rgba(1a1a1aee)
+}
+
+animations {
+    enabled = true
+    bezier = myBezier, 0.05, 0.9, 0.1, 1.05
+    animation = windows, 1, 7, myBezier
+    animation = windowsOut, 1, 7, default, popin 80%
+    animation = border, 1, 10, default
+    animation = borderangle, 1, 8, default
+    animation = fade, 1, 7, default
+    animation = workspaces, 1, 6, default
+}
+
+dwindle {
+    pseudotile = true
+    preserve_split = true
+}
+
+# Keybindings
+$mainMod = SUPER
+
+bind = $mainMod, Q, exec, kitty
+bind = $mainMod, C, killactive,
+bind = $mainMod, M, exit,
+bind = $mainMod, R, exec, wofi --show drun
+bind = $mainMod, V, togglefloating,
+bind = $mainMod, P, pseudo,
+bind = $mainMod, J, togglesplit,
+
+# Focus
+bind = $mainMod, left, movefocus, l
+bind = $mainMod, right, movefocus, r
+bind = $mainMod, up, movefocus, u
+bind = $mainMod, down, movefocus, d
+
+# Workspaces
+bind = $mainMod, 1, workspace, 1
+bind = $mainMod, 2, workspace, 2
+bind = $mainMod, 3, workspace, 3
+bind = $mainMod, 4, workspace, 4
+bind = $mainMod, 5, workspace, 5
+bind = $mainMod, 6, workspace, 6
+bind = $mainMod, 7, workspace, 7
+bind = $mainMod, 8, workspace, 8
+bind = $mainMod, 9, workspace, 9
+bind = $mainMod, 0, workspace, 10
+
+# Move active window to workspace
+bind = $mainMod SHIFT, 1, movetoworkspace, 1
+bind = $mainMod SHIFT, 2, movetoworkspace, 2
+bind = $mainMod SHIFT, 3, movetoworkspace, 3
+bind = $mainMod SHIFT, 4, movetoworkspace, 4
+bind = $mainMod SHIFT, 5, movetoworkspace, 5
+bind = $mainMod SHIFT, 6, movetoworkspace, 6
+bind = $mainMod SHIFT, 7, movetoworkspace, 7
+bind = $mainMod SHIFT, 8, movetoworkspace, 8
+bind = $mainMod SHIFT, 9, movetoworkspace, 9
+bind = $mainMod SHIFT, 0, movetoworkspace, 10
+EOF
+
+        # Create basic waybar config
+        mkdir -p "$user_home/.config/waybar"
+        cat > "$user_home/.config/waybar/config" << 'EOF'
+{
+    "layer": "top",
+    "position": "top",
+    "height": 30,
+    "modules-left": ["hyprland/workspaces", "hyprland/submap"],
+    "modules-center": ["hyprland/window"],
+    "modules-right": ["pulseaudio", "network", "cpu", "memory", "clock", "tray"],
+    "hyprland/workspaces": {
+        "format": "{name}"
+    },
+    "clock": {
+        "format": "{:%H:%M | %d-%m-%Y}"
+    },
+    "cpu": {
+        "format": "CPU {usage}%"
+    },
+    "memory": {
+        "format": "RAM {percentage}%"
+    }
+}
+EOF
+        
+        # Set ownership of the config files to the created user
+        chroot_exec "/mnt" "chown -R ${USERNAME}:wheel /home/${USERNAME}/.config"
+    fi
 
     # Enable ParallelDownloads, Color, and ILoveCandy in pacman.conf
     if [ -f /mnt/etc/pacman.conf ]; then

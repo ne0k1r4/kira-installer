@@ -170,6 +170,7 @@ test_network() {
 # MAIN INSTALLATION FLOW
 # ======================================================================
 main() {
+    [ "${HOSTNAME:-}" = "archiso" ] && unset HOSTNAME
     load_preseed || true
     
     if [ "${NO_BANNER:-false}" != "true" ]; then
