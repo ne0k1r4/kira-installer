@@ -35,16 +35,27 @@ disk_partition() {
 
     retry wipefs -af "$DISK"
 
-    retry parted -s "$DISK" mklabel gpt
+    local boot_mode="bios"
+    if [ -d /sys/firmware/efi ]; then
+        boot_mode="uefi"
+    fi
+    log "INFO" "Detected boot mode: $boot_mode"
 
-    log "INFO" "Creating boot partition"
-
-    retry parted -s "$DISK" mkpart ESP fat32 1MiB 513MiB
-    retry parted -s "$DISK" set 1 esp on
-
-    log "INFO" "Creating root partition"
-
-    retry parted -s "$DISK" mkpart primary ext4 513MiB 100%
+    if [ "$boot_mode" = "uefi" ]; then
+        retry parted -s "$DISK" mklabel gpt
+        log "INFO" "Creating boot partition (GPT)"
+        retry parted -s "$DISK" mkpart ESP fat32 1MiB 513MiB
+        retry parted -s "$DISK" set 1 esp on
+        log "INFO" "Creating root partition (GPT)"
+        retry parted -s "$DISK" mkpart primary ext4 513MiB 100%
+    else
+        retry parted -s "$DISK" mklabel msdos
+        log "INFO" "Creating boot partition (MBR)"
+        retry parted -s "$DISK" mkpart primary fat32 1MiB 513MiB
+        retry parted -s "$DISK" set 1 boot on
+        log "INFO" "Creating root partition (MBR)"
+        retry parted -s "$DISK" mkpart primary ext4 513MiB 100%
+    fi
 
     sleep 2
     partprobe "$DISK"
