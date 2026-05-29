@@ -1,98 +1,55 @@
-<p align="center">
-    <img src="https://media.giphy.com/media/YmZOBDYBcmWK4/giphy.gif" width="100%" alt="Misa Amane Hero">
-</p>
+# 📓 KIRA INSTALLER
 
-# <div align="center">💀 𝕶IRA 𝕴NSTALLER 💀</div>
-### <div align="center">𝕿he 𝕬bsolute 𝕬rch 𝕷inux 𝕰xecution</div>
+Kira Installer is an automated, themed Arch Linux installation script. Working as your loyal system assistant (Misa Amane), it partitions drives, configures encryption vaults, and deploys a clean Hyprland Wayland desktop environment under your absolute command.
 
-<p align="center">
-    <a href="#"><img src="https://img.shields.io/badge/STATUS-EXECUTING_JUDGMENT-darkred?style=for-the-badge&logo=arch-linux" alt="Status" /></a>
-    <a href="#"><img src="https://img.shields.io/badge/ENCRYPTION-SHINIGAMI_VAULT-black?style=for-the-badge&logo=gnupg" alt="Security" /></a>
-    <a href="#"><img src="https://img.shields.io/badge/LICENSE-DEATH_NOTE-black?style=for-the-badge" alt="License" /></a>
-</p>
+## ⚡ Features
 
-<div align="center">
-<b>KIRA INSTALLER is your automated Arch Linux setup script. The installer is themed around Misa Amane, your loyal gothic-lolita waifu assistant. Devoted entirely to you (Kira), she uses her Shinigami Eyes to read partition layouts, sweep away bloatware, and build a flawless, secure operating system under your absolute command.</b>
-</div>
+- **Pure Devotion (Zero Bloat):** Wipes target disks completely and installs only what you authorize.
+- **Stealth Vaults (LUKS2 + LVM):** Implements physical volume encryption via `argon2id`.
+- **Gothic Whiptail TUI:** Sleek, unified dialog menus for disk selection and credentials.
+- **Hardware Configured:** Auto-detects system CPU microcode and multi-GPU configurations.
+- **Candy-enabled Package Feeds:** Custom-sweetened Pacman downloads with speed optimizations.
 
----
+## 🚀 Execution Guide
 
-<table width="100%" style="border: none;">
-    <tr>
-        <td width="50%" align="center">
-            <h2>📓 The Shinigami Eye Deal</h2>
-            <img src="https://media.giphy.com/media/o2KLYPem407CM/giphy.gif" width="100%" style="border-radius: 8px;" alt="Writing Names">
-        </td>
-        <td width="50%" align="left">
-            <h3>"I'll do anything for you, Lord Kira!"</h3>
-            <p>Misa Amane has traded half her life for the Shinigami Eyes. She sees all your block devices, mounts, and UUIDs instantly. She writes system bloatware and partitions in her Death Note to format them precisely for you.</p>
-            <ul>
-                <li>💀 <b>Pure Devotion (Zero Bloat):</b> Wipes target disks completely and installs only what you authorize.</li>
-                <li>🔐 <b>Security Vaults (LUKS2 + LVM):</b> Locks down your directories using argon2id encryption.</li>
-                <li>📺 <b>Whiptail Face:</b> Interactive user interface menus for disk setup and configurations.</li>
-                <li>🏎️ <b>Hardware Aware:</b> Installs Intel/AMD microcode and multi-GPU drivers (AMD, Intel, NVIDIA) automatically.</li>
-                <li>🍬 <b>Sweet Pacman:</b> Configures parallel downloads, colored console outputs, and the ILoveCandy progress bar because Misa loves sweets!</li>
-            </ul>
-        </td>
-    </tr>
-</table>
-
----
-
-## 📜 Rules of Execution (Quick Start)
-
-### 1. The Preparation
-Boot into the official Arch Linux installation media and verify your network connection:
+### 1. Network Prep
+Ensure you have active internet connectivity:
 ```bash
 ping archlinux.org -c 3
 ```
 
-### 2. Procure the Notebook
-Clone the script repository to download the files:
+### 2. Retrieve the Notebook
+Clone the script repository and set permissions:
 ```bash
 git clone https://github.com/ne0k1r4/kira-installer.git
 cd kira-installer
 chmod +x kira.sh
 ```
 
-### 3. Execute Judgment
-Run the installer script with root privileges:
+### 3. Deploy
+Execute the installer with root privileges:
 ```bash
 sudo ./kira.sh
 ```
 
----
+## 🧠 Automated Deployment (Preseed)
 
-## 🧠 Preseed (Automated Mode)
-Bypass interactive prompts and perform silent installations using a `.conf` configuration template:
-
+Bypass TUI dialogs and execute silent installations using `.conf` files:
 ```bash
-# Execute silent automated installation
 sudo ./kira.sh --preseed preseed/production.conf
 ```
+*Set `AUTO=true` in your preseed configuration to skip all confirmation prompts.*
 
-> [!NOTE]
-> Check `preseed/production.conf` for layout guidelines. Set `AUTO=true` to skip all confirmations and dialog menus.
+## 🧩 Architecture
 
----
-
-## 🧩 The Notebook Pages (Architecture)
-
-Every component is modular, working under your master commands:
-
-* [kira.sh](file:///home/LIGHT/dev/projects/kira-installer/kira.sh) — **Kira's Will** (Master orchestration, validation, and FD 3 updates).
-* [lib/common.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/common.sh) — **The Ledger** (Gothic colored console logger logs, retries, and secure password prompts).
-* [lib/ui.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/ui.sh) — **The Face** (Gothic Whiptail interface, welcome banners, choice menus, and progress gauge).
-* [lib/disk.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/disk.sh) — **The Scythe** (Drawing partition slices, clearing block memories, and mounting workspaces).
-* [lib/encryption.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/encryption.sh) — **The Vault** (Stealthy LUKS2 + LVM physical volume configuration).
-* [lib/system.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/system.sh) — **The Pulse** (TimeZone auto-detection, user setup, SDDM and Hyprland sweet layouts).
-* [lib/bootloader.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/bootloader.sh) — **The Crown** (Bootctl and GRUB configurations).
+- **`kira.sh`** — Master orchestrator and state coordinator.
+- **`lib/common.sh`** — Ledger logs, retry helper, and password wipes.
+- **`lib/ui.sh`** — TUI menus, welcome dialogs, and progress gauges.
+- **`lib/disk.sh`** — Wipefs, parted partition segments, and mounting.
+- **`lib/encryption.sh`** — LUKS2 containerization and LVM setups.
+- **`lib/system.sh`** — Timezone, user credentials, package sets, and Hyprland styling.
+- **`lib/bootloader.sh`** — UEFI Systemd-boot and BIOS GRUB setup.
 
 ---
 
-## ⚠️ Warning
-**SYSTEM DESTRUCTION:** Executing Kira's installer **WILL FORMAT AND WIPE ALL PREVIOUS DATA ON THE TARGET DISK**. Once written in Misa's notebook, your data cannot be retrieved!
-
-<br>
-
-### <div align="center">"I'll write their names... and build your new world, Kira!" 📓 🖤</div>
+⚠️ **WARNING:** Running this script **WILL PERMANENTLY ERASE ALL DATA** on the selected disk. Proceed with absolute caution.
