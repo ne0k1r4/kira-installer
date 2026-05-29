@@ -1,6 +1,28 @@
 #!/usr/bin/env bash
 # 🍎 KIRA INSTALLER — The Face (UI & User Interaction)
 
+# Custom Whiptail Theme (Gothic Dark/Crimson Red Death Note styling!)
+export NEWT_COLORS='
+  root=,black
+  window=black,red
+  border=red,black
+  shadow=black,black
+  title=red,black
+  button=black,red
+  actbutton=red,black
+  compactbutton=black,red
+  checkbox=red,black
+  actcheckbox=black,red
+  entry=red,black
+  disentry=gray,black
+  label=red,black
+  listbox=red,black
+  actlistbox=black,red
+  scrollbar=red,black
+  navbutton=black,red
+  actnavbutton=red,black
+'
+
 # ======================================================================
 # SHOW MAIN BANNER
 # ======================================================================

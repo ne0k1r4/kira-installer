@@ -185,6 +185,12 @@ dwindle {
     preserve_split = true
 }
 
+misc {
+    disable_hyprland_logo = true
+    disable_splash_rendering = true
+    background_color = 0x11111b
+}
+
 # Keybindings
 $mainMod = SUPER
 
@@ -236,7 +242,7 @@ EOF
     "height": 30,
     "modules-left": ["hyprland/workspaces", "hyprland/submap"],
     "modules-center": ["hyprland/window"],
-    "modules-right": ["pulseaudio", "network", "cpu", "memory", "clock", "tray"],
+    "modules-right": ["cpu", "memory", "clock", "tray"],
     "hyprland/workspaces": {
         "format": "{name}"
     },
@@ -249,6 +255,46 @@ EOF
     "memory": {
         "format": "RAM {percentage}%"
     }
+}
+EOF
+
+        # Create a beautiful custom stylesheet for Waybar (glassmorphism!)
+        cat > "$user_home/.config/waybar/style.css" << 'EOF'
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "JetBrains Mono", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    min-height: 0;
+}
+
+window#waybar {
+    background: rgba(17, 17, 27, 0.85);
+    color: #cdd6f4;
+    border-bottom: 2px solid rgba(255, 105, 180, 0.6); /* Misa Hot-Pink Border! */
+}
+
+#workspaces button {
+    padding: 0 8px;
+    background: transparent;
+    color: #a6adc8;
+}
+
+#workspaces button.active {
+    color: #ff69b4; /* Pink active text */
+    font-weight: bold;
+}
+
+#workspaces button:hover {
+    background: rgba(255, 105, 180, 0.15);
+    color: #ff1493;
+}
+
+#clock, #cpu, #memory, #tray {
+    padding: 0 12px;
+    margin: 3px 2px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.07);
 }
 EOF
         
