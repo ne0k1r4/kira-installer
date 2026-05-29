@@ -1,22 +1,18 @@
 <p align="center">
-    <img src="https://media.giphy.com/media/YmZOBDYBcmWK4/giphy.gif" width="100%" alt="Kira Hero">
+    <img src="https://media.giphy.com/media/YmZOBDYBcmWK4/giphy.gif" width="100%" alt="Misa Amane Hero">
 </p>
 
-# <div align="center">𝕶IRA 𝕴NSTALLER</div>
+# <div align="center">💀 𝕶IRA 𝕴NSTALLER 💀</div>
 ### <div align="center">𝕿he 𝕬bsolute 𝕬rch 𝕷inux 𝕰xecution</div>
 
-<div align="center">
-*"I'll take a potato chip... and INSTALL ARCH LINUX!"*
-</div>
-
 <p align="center">
-    <a href="#"><img src="https://img.shields.io/badge/STATUS-FLAWLESS_EXECUTION-black?style=for-the-badge&logo=arch-linux" alt="Status" /></a>
-    <a href="#"><img src="https://img.shields.io/badge/ENCRYPTION-LUKS2_%2B_LVM-darkred?style=for-the-badge&logo=gnupg" alt="Security" /></a>
+    <a href="#"><img src="https://img.shields.io/badge/STATUS-EXECUTING_JUDGMENT-darkred?style=for-the-badge&logo=arch-linux" alt="Status" /></a>
+    <a href="#"><img src="https://img.shields.io/badge/ENCRYPTION-SHINIGAMI_VAULT-black?style=for-the-badge&logo=gnupg" alt="Security" /></a>
     <a href="#"><img src="https://img.shields.io/badge/LICENSE-DEATH_NOTE-black?style=for-the-badge" alt="License" /></a>
 </p>
 
 <div align="center">
-<b>KIRA is a divine, automated, and ruthless installer script designed to set up Arch Linux cleanly, securely, and without any human error. Leave no trace of bloatware behind.</b>
+<b>KIRA INSTALLER is your automated Arch Linux setup script. The installer is themed around Misa Amane, your loyal gothic-lolita waifu assistant. Devoted entirely to you (Kira), she uses her Shinigami Eyes to read partition layouts, sweep away bloatware, and build a flawless, secure operating system under your absolute command.</b>
 </div>
 
 ---
@@ -24,19 +20,18 @@
 <table width="100%" style="border: none;">
     <tr>
         <td width="50%" align="center">
-            <h2>𝕯ivine 𝕬utomation</h2>
-            <img src="https://media.giphy.com/media/o2KLYPem407CM/giphy.gif" width="100%" style="border-radius: 8px;" alt="Writing names">
+            <h2>📓 The Shinigami Eye Deal</h2>
+            <img src="https://media.giphy.com/media/o2KLYPem407CM/giphy.gif" width="100%" style="border-radius: 8px;" alt="Writing Names">
         </td>
         <td width="50%" align="left">
-            <h3>The Perfect World</h3>
-            <p>Just as Light Yagami sought to become the god of the new world by precisely executing criminals, the <b>KIRA Arch Installer</b> seeks to precisely configure your partitions, secure your system, and orchestrate the perfect Arch environment.</p>
-            <p>No messy configurations. No bloated defaults. Just swift, absolute execution.</p>
+            <h3>"I'll do anything for you, Lord Kira!"</h3>
+            <p>Misa Amane has traded half her life for the Shinigami Eyes. She sees all your block devices, mounts, and UUIDs instantly. She writes system bloatware and partitions in her Death Note to format them precisely for you.</p>
             <ul>
-                <li>💀 <b>Absolute Automation:</b> Single, dual, and USB setups.</li>
-                <li>🔐 <b>Impenetrable Encryption:</b> LUKS2 + LVM stealth.</li>
-                <li>📺 <b>Interactive TUI:</b> Whiptail menus do the talking.</li>
-                <li>🤖 <b>Preseed Support:</b> Point, click, walk away.</li>
-                <li>🏎️ <b>Hardware Awareness:</b> Automated CPU microcode & GPU driver parsing.</li>
+                <li>💀 <b>Pure Devotion (Zero Bloat):</b> Wipes target disks completely and installs only what you authorize.</li>
+                <li>🔐 <b>Security Vaults (LUKS2 + LVM):</b> Locks down your directories using argon2id encryption.</li>
+                <li>📺 <b>Whiptail Face:</b> Interactive user interface menus for disk setup and configurations.</li>
+                <li>🏎️ <b>Hardware Aware:</b> Installs Intel/AMD microcode and multi-GPU drivers (AMD, Intel, NVIDIA) automatically.</li>
+                <li>🍬 <b>Sweet Pacman:</b> Configures parallel downloads, colored console outputs, and the ILoveCandy progress bar because Misa loves sweets!</li>
             </ul>
         </td>
     </tr>
@@ -44,76 +39,59 @@
 
 ---
 
-## 📜 𝕿he 𝕽ules of 𝕰xecution (𝕼uick 𝕾tart)
+## 📜 Rules of Execution (Quick Start)
 
-### 1. 𝕿he 𝕻reparation
-Boot into the official Arch Linux installation media and confirm your connection to the outside world.
+### 1. The Preparation
+Boot into the official Arch Linux installation media and verify your network connection:
 ```bash
 ping archlinux.org -c 3
 ```
 
-### 2. 𝕻rocure the 𝕯eath 𝕹ote
-Bring the script down from your repository.
+### 2. Procure the Notebook
+Clone the script repository to download the files:
 ```bash
 git clone https://github.com/jhjmhgKGON/555.git kira-installer
 cd kira-installer
 chmod +x kira.sh
 ```
 
-### 3. 𝕰xecute 𝕵udgment
-Even Kira needs root to change the world. Execute the script and let the judgment begin.
+### 3. Execute Judgment
+Run the installer script with root privileges:
 ```bash
 sudo ./kira.sh
 ```
 
 ---
 
-## 🧠 𝕻reseed (𝕬utomated 𝕸ode)
-Don't want to answer questions? Want to mass-install? Use a **Preseed**. By providing a `.conf` file, KIRA will bypass the interface and silently execute your precise will.
+## 🧠 Preseed (Automated Mode)
+Bypass interactive prompts and perform silent installations using a `.conf` configuration template:
 
 ```bash
-# Use the provided production configuration file
+# Execute silent automated installation
 sudo ./kira.sh --preseed preseed/production.conf
 ```
 
-<div align="center">
-    <p><i>Tip: Check <code>preseed/production.conf</code> for a perfect template! You can enforce absolute automation using <code>AUTO=true</code>.</i></p>
-    <br>
-    <img src="https://media.giphy.com/media/o2KLYPem407CM/giphy.gif" width="60%" style="border-radius: 8px;" alt="Writing Names">
-</div>
+> [!NOTE]
+> Check `preseed/production.conf` for layout guidelines. Set `AUTO=true` to skip all confirmations and dialog menus.
 
 ---
 
-## 🧩 𝕿he 𝕬rchitecture
-<table width="100%" style="border: none;">
-    <tr>
-        <td width="50%" align="left">
-            <p>Everything operates sequentially under the module library. No hidden agendas. Total control.</p>
-            <ul>
-                <li><code>kira.sh</code> — <b>The Mastermind</b></li>
-                <li><code>lib/disk.sh</code> — <b>The Scythe</b> (Validation & Partitions)</li>
-                <li><code>lib/encryption.sh</code> — <b>The Vault</b> (LUKS2 & LVM)</li>
-                <li><code>lib/system.sh</code> — <b>The Pulse</b> (Pacstrap & Configs)</li>
-                <li><code>lib/ui.sh</code> — <b>The Face</b> (ASCII Menus & Progress)</li>
-            </ul>
-        </td>
-        <td width="50%" align="center">
-            <img src="https://media.giphy.com/media/10bKPDUM5H7m7u/giphy.gif" width="100%" style="border-radius: 8px;" alt="Kira Laughing">
-        </td>
-    </tr>
-</table>
+## 🧩 The Notebook Pages (Architecture)
+
+Every component is modular, working under your master commands:
+
+* [kira.sh](file:///home/LIGHT/dev/projects/kira-installer/kira.sh) — **Kira's Will** (Master orchestration, validation, and FD 3 updates).
+* [lib/ui.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/ui.sh) — **Misa's Face** (ASCII menu layouts, dialogs, and progress bars).
+* [lib/disk.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/disk.sh) — **The Notebook** (Wiping blocks, partition table writes, and mounting).
+* [lib/encryption.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/encryption.sh) — **The Hidden Desk Drawer** (LUKS2 argon2id encryption & LVM logic).
+* [lib/system.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/system.sh) — **Misa's Diary** (Dynamic timezone matching, user setup, base packages, and pacman configurations).
+* [lib/bootloader.sh](file:///home/LIGHT/dev/projects/kira-installer/lib/bootloader.sh) — **The Shinigami Deal** (Grants systemd-boot for UEFI systems or GRUB for BIOS).
 
 ---
 
-<p align="center">
-    <a href="#">
-        <img src="https://media.giphy.com/media/wMqzS9qqe6X2E/giphy.gif" width="100%" style="border-radius: 12px;" alt="Discord Presence Effect">
-    </a>
-</p>
-
-## ⚠️ 𝕯isclaimer
-**DATA OBLITERATION:** Executing KIRA **WILL FORMAT AND DESTROY ALL PREVIOUS DATA ON THE TARGET DISK**. Be absolute in your targets. Understand the consequences. Unlike Shinigami eyes, you cannot buy back your wiped data with half your life!
+## ⚠️ Warning
+**SYSTEM DESTRUCTION:** Executing Kira's installer **WILL FORMAT AND WIPE ALL PREVIOUS DATA ON THE TARGET DISK**. Once written in Misa's notebook, your data cannot be retrieved!
 
 <br>
 
-### <div align="center">"𝕿his system is mine. 𝕴ts foundations, its bootloader, its filesystems..." 🍎</div>
+### <div align="center">"I'll write their names... and build your new world, Kira!" 📓 🖤</div>
