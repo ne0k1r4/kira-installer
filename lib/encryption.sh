@@ -32,17 +32,18 @@ encryption_setup() {
 }
 
 encryption_format() {
+    local LVM_PART="${LVM_PART:-$ROOT_PART}"
+
     if [ "$ENCRYPTION" = "none" ]; then
         ENCRYPTED_PART="$ROOT_PART"
         ROOT_MAPPER="$ROOT_PART"
         export ENCRYPTED_PART ROOT_MAPPER
         echo "$ENCRYPTED_PART" > "$STATE_DIR/encrypted-part"
-        return 0
-    fi
-    
-    if [ -z "${CRYPT_PASS:-}" ]; then
-        log "ERROR" "Encryption password not set!"
-        return 1
+    else
+        if [ -z "${CRYPT_PASS:-}" ]; then
+            log "ERROR" "Encryption password not set!"
+            return 1
+        fi
     fi
     
     case $ENCRYPTION in
@@ -73,7 +74,7 @@ encryption_format() {
             
             local vg_size
             vg_size=$(vgdisplay vg0 2>/dev/null | grep "Total PE" | awk '{print $3}' 2>/dev/null || echo "0")
-            if [ "$vg_size" -gt 0 ]; then
+            if [[ "$vg_size" =~ ^[0-9]+$ ]] && [ "$vg_size" -gt 0 ]; then
                 local vg_size_bytes=$((vg_size * 4 * 1024 * 1024))
                 local vg_size_gb=$((vg_size_bytes / 1024 / 1024 / 1024))
                 

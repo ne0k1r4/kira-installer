@@ -28,7 +28,9 @@ bootloader_target_mode() {
 bootloader_install() {
     local uuid=""
 
-    if [ "${ENCRYPTION:-none}" != "none" ]; then
+    if [ "${DRY_RUN:-false}" = "true" ]; then
+        uuid="00000000-0000-0000-0000-000000000000"
+    elif [ "${ENCRYPTION:-none}" != "none" ]; then
         local encrypted_part
         encrypted_part=$(cat "$STATE_DIR/encrypted-part" 2>/dev/null)
         [ -z "$encrypted_part" ] && [ -n "${ENCRYPTED_PART:-}" ] && encrypted_part="$ENCRYPTED_PART"
@@ -67,30 +69,35 @@ _bootloader_install_systemd() {
         cmdline="root=UUID=$uuid rw quiet"
     fi
     
-    cat > /mnt/boot/loader/entries/arch.conf << EOF
+    if [ "${DRY_RUN:-false}" = "true" ]; then
+        log "INFO" "[DRY RUN] Would write systemd-boot configuration files"
+    else
+        mkdir -p /mnt/boot/loader/entries
+        cat > /mnt/boot/loader/entries/arch.conf << EOF
 title Arch Linux (KIRA)
 linux /vmlinuz-linux
 EOF
-    [ -n "$MICROCODE_FILE" ] && echo "initrd /$MICROCODE_FILE" >> /mnt/boot/loader/entries/arch.conf
-    cat >> /mnt/boot/loader/entries/arch.conf << EOF
+        [ -n "$MICROCODE_FILE" ] && echo "initrd /$MICROCODE_FILE" >> /mnt/boot/loader/entries/arch.conf
+        cat >> /mnt/boot/loader/entries/arch.conf << EOF
 initrd /initramfs-linux.img
 options $cmdline
 EOF
 
-    cat > /mnt/boot/loader/entries/arch-fallback.conf << EOF
+        cat > /mnt/boot/loader/entries/arch-fallback.conf << EOF
 title Arch Linux (KIRA - Recovery)
 linux /vmlinuz-linux
 EOF
-    [ -n "$MICROCODE_FILE" ] && echo "initrd /$MICROCODE_FILE" >> /mnt/boot/loader/entries/arch-fallback.conf
-    cat >> /mnt/boot/loader/entries/arch-fallback.conf << EOF
+        [ -n "$MICROCODE_FILE" ] && echo "initrd /$MICROCODE_FILE" >> /mnt/boot/loader/entries/arch-fallback.conf
+        cat >> /mnt/boot/loader/entries/arch-fallback.conf << EOF
 initrd /initramfs-linux-fallback.img
 options $cmdline
 EOF
 
-    cat > /mnt/boot/loader/loader.conf << 'EOF'
+        cat > /mnt/boot/loader/loader.conf << 'EOF'
 default arch.conf
 timeout 4
 EOF
+    fi
 }
 
 # ======================================================================
@@ -107,14 +114,18 @@ _bootloader_install_grub() {
         grub_cmdline="cryptdevice=UUID=$uuid:cryptroot root=/dev/mapper/cryptroot"
     fi
     
-    [ -n "$grub_cmdline" ] && chroot_exec "/mnt" "sed -i 's|GRUB_CMDLINE_LINUX=\"\"|GRUB_CMDLINE_LINUX=\"$grub_cmdline\"|' /etc/default/grub"
-    
-    if [ "$INSTALL_MODE" = "dual" ]; then
-        log "INFO" "Dual boot mode detected, enabling os-prober"
-        chroot_exec "/mnt" "
-            echo 'GRUB_DISABLE_OS_PROBER=false' >> /etc/default/grub
-        "
+    if [ "${DRY_RUN:-false}" = "true" ]; then
+        log "INFO" "[DRY RUN] Would configure and install GRUB bootloader"
+    else
+        [ -n "$grub_cmdline" ] && chroot_exec "/mnt" "sed -i 's|GRUB_CMDLINE_LINUX=\"\"|GRUB_CMDLINE_LINUX=\"$grub_cmdline\"|' /etc/default/grub"
+        
+        if [ "$INSTALL_MODE" = "dual" ]; then
+            log "INFO" "Dual boot mode detected, enabling os-prober"
+            chroot_exec "/mnt" "
+                echo 'GRUB_DISABLE_OS_PROBER=false' >> /etc/default/grub
+            "
+        fi
+        
+        execute arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
     fi
-    
-    execute arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 }

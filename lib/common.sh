@@ -13,7 +13,7 @@ log() {
     message=$(echo "$message" | sed -E 's/(passphrase|password|CRYPT_PASS)=[^ ]*/\1=***REDACTED***/g')
     echo "[$timestamp] [$level] $message" >> "${LOG_FILE:-/tmp/kira-installer.log}"
     
-    if [ "${TERM:-}" != "dumb" ]; then
+    if [ "${TERM:-}" != "dumb" ] && [ "${UI_ACTIVE:-false}" != "true" ]; then
         case "$level" in
             ERROR)   echo -e "\033[0;31m[$level]\033[0m $message" ;;
             WARNING) echo -e "\033[1;33m[$level]\033[0m $message" ;;
@@ -32,6 +32,10 @@ error() {
 # RETRY HELPER
 # ======================================================================
 retry() {
+    if [ "${DRY_RUN:-false}" = "true" ]; then
+        log "INFO" "[DRY RUN] Would retry command: $*"
+        return 0
+    fi
     local attempts=5
     local count=0
 

@@ -5,14 +5,27 @@
 # DETECT GPU & MICROCODE
 # ======================================================================
 system_detect_gpu() {
-    local vendor
-    vendor=$(lspci 2>/dev/null | grep -E "VGA|3D" | grep -i -o -E "nvidia|amd|intel" | head -1 | tr '[:upper:]' '[:lower:]' || true)
-    case $vendor in
-        nvidia) GPU_DRIVERS=("nvidia" "nvidia-utils") ;;
-        amd)    GPU_DRIVERS=("xf86-video-amdgpu" "vulkan-radeon") ;;
-        intel)  GPU_DRIVERS=("xf86-video-intel" "vulkan-intel") ;;
-        *)      GPU_DRIVERS=("mesa") ;;
-    esac
+    GPU_DRIVERS=()
+    local devices
+    devices=$(lspci 2>/dev/null | grep -E "VGA|3D" | tr '[:upper:]' '[:lower:]' || true)
+    
+    if echo "$devices" | grep -q "nvidia"; then
+        GPU_DRIVERS+=("nvidia" "nvidia-utils")
+        log "INFO" "Detected NVIDIA GPU drivers"
+    fi
+    if echo "$devices" | grep -q "amd"; then
+        GPU_DRIVERS+=("xf86-video-amdgpu" "vulkan-radeon")
+        log "INFO" "Detected AMD GPU drivers"
+    fi
+    if echo "$devices" | grep -q "intel"; then
+        GPU_DRIVERS+=("xf86-video-intel" "vulkan-intel")
+        log "INFO" "Detected Intel GPU drivers"
+    fi
+    
+    if [ ${#GPU_DRIVERS[@]} -eq 0 ]; then
+        GPU_DRIVERS=("mesa")
+        log "INFO" "No specific GPU vendor detected, using mesa"
+    fi
     export GPU_DRIVERS
 }
 
@@ -73,6 +86,11 @@ system_configure_mkinitcpio() {
 # CONFIGURE SYSTEM IDENTITIES & PASSWORDS
 # ======================================================================
 system_configure() {
+    if [ "${DRY_RUN:-false}" = "true" ]; then
+        log "INFO" "[DRY RUN] Would configure system identities, users, passwords, and mkinitcpio"
+        return 0
+    fi
+
     # Write hostname and hosts
     echo "$HOSTNAME" > /mnt/etc/hostname
     cat > /mnt/etc/hosts <<EOF
@@ -81,8 +99,17 @@ system_configure() {
 127.0.1.1   ${HOSTNAME}.localdomain ${HOSTNAME}
 EOF
 
+    # Dynamically detect timezone from host
+    local timezone="UTC"
+    if [ -L /etc/localtime ]; then
+        timezone=$(readlink /etc/localtime | sed 's|.*/zoneinfo/||' || echo "UTC")
+    elif [ -f /etc/timezone ]; then
+        timezone=$(cat /etc/timezone || echo "UTC")
+    fi
+    log "INFO" "Auto-detected host timezone: $timezone"
+
     chroot_exec "/mnt" "
-        ln -sf /usr/share/zoneinfo/UTC /etc/localtime
+        ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
         hwclock --systohc
         echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen
         locale-gen
@@ -96,6 +123,16 @@ EOF
     echo "${USERNAME}:${USERPASS}" | arch-chroot /mnt chpasswd
     echo '%wheel ALL=(ALL:ALL) ALL' > /mnt/etc/sudoers.d/10-wheel
     chmod 440 /mnt/etc/sudoers.d/10-wheel
+
+    # Enable ParallelDownloads, Color, and ILoveCandy in pacman.conf
+    if [ -f /mnt/etc/pacman.conf ]; then
+        sed -i 's/^#Color/Color/' /mnt/etc/pacman.conf
+        if ! grep -q "ILoveCandy" /mnt/etc/pacman.conf; then
+            sed -i '/^Color/a ILoveCandy' /mnt/etc/pacman.conf
+        fi
+        sed -i 's/^#ParallelDownloads.*/ParallelDownloads = 5/' /mnt/etc/pacman.conf
+        log "INFO" "Optimized pacman.conf (Color, ParallelDownloads = 5, ILoveCandy)"
+    fi
 
     system_configure_mkinitcpio
 }

@@ -50,6 +50,7 @@ PRESEED_FILE="/etc/kira-installer/preseed.conf"
 DRY_RUN=${DRY_RUN:-false}
 
 mkdir -p "$CONFIG_DIR" "$STATE_DIR"
+exec 3>&1
 
 # ======================================================================
 # INITIALIZATION
@@ -60,7 +61,12 @@ cleanup_on_exit() {
     local exit_code=$?
     if [ $exit_code -ne 0 ]; then
         log "ERROR" "Installation failed with code $exit_code! Cleaning up..."
-        umount -R /mnt 2>/dev/null || true
+        if [ "${DRY_RUN:-false}" != "true" ]; then
+            umount -R /mnt 2>/dev/null || true
+            vgchange -an vg0 2>/dev/null || true
+            cryptsetup close cryptroot 2>/dev/null || true
+            cryptsetup close cryptlvm 2>/dev/null || true
+        fi
     else
         log "INFO" "Installation completed successfully"
     fi
@@ -130,6 +136,10 @@ validate_required_vars() {
 # NETWORK TEST
 # ======================================================================
 test_network() {
+    if [ "${DRY_RUN:-false}" = "true" ]; then
+        log "INFO" "[DRY RUN] Bypassing network connectivity test"
+        return 0
+    fi
     while true; do
         log "INFO" "Testing network connectivity..."
 
@@ -174,7 +184,12 @@ main() {
     fi
     log "INFO" "Installation mode: $INSTALL_MODE"
     
-    ui_optimize_mirrors || log "WARNING" "Mirror optimization failed, using defaults"
+    if [ -n "${SELECTED_DISK:-}" ]; then
+        if ! disk_validate "$SELECTED_DISK"; then
+            log "WARNING" "Preseeded disk validation failed. Resetting SELECTED_DISK."
+            unset SELECTED_DISK
+        fi
+    fi
     
     bootloader_detect_microcode
     system_detect_gpu
@@ -263,38 +278,42 @@ main() {
         ui_confirm_installation || { clear_passwords; exit 0; }
     fi
     
-    if [ "$DRY_RUN" = "true" ]; then
-        ui_dry_run_message
-        clear_passwords
-        exit 0
-    fi
-    
+    export UI_ACTIVE=true
     (
         ui_progress 10 "Creating partitions..."
-        disk_partition
+        disk_partition >> "$LOG_FILE" 2>&1
         
-        ui_progress 20 "Formatting partitions..."
-        disk_format
+        ui_progress 20 "Optimizing pacman mirrors..."
+        ui_optimize_mirrors >> "$LOG_FILE" 2>&1
         
-        ui_progress 30 "Mounting partitions..."
-        disk_mount
+        ui_progress 30 "Formatting and setting up encryption..."
+        encryption_format >> "$LOG_FILE" 2>&1
         
-        ui_progress 40 "Installing base system..."
-        system_install_base
+        ui_progress 45 "Mounting partitions..."
+        disk_mount >> "$LOG_FILE" 2>&1
         
-        ui_progress 50 "Generating fstab..."
-        execute genfstab -U /mnt >> /mnt/etc/fstab
+        ui_progress 55 "Installing base system (this may take a few minutes)..."
+        system_install_base >> "$LOG_FILE" 2>&1
         
-        ui_progress 60 "Configuring system..."
-        system_configure
+        ui_progress 75 "Generating fstab..."
+        if [ "${DRY_RUN:-false}" = "true" ]; then
+            log "INFO" "[DRY RUN] Would execute: genfstab -U /mnt >> /mnt/etc/fstab"
+        else
+            execute genfstab -U /mnt >> /mnt/etc/fstab 2>> "$LOG_FILE"
+        fi
         
-        ui_progress 70 "Installing bootloader..."
-        bootloader_install
+        ui_progress 85 "Configuring system..."
+        system_configure >> "$LOG_FILE" 2>&1
         
-        ui_progress 90 "Finalizing installation..."
-        clear_passwords
+        ui_progress 95 "Installing bootloader..."
+        bootloader_install >> "$LOG_FILE" 2>&1
+        
+        ui_progress 98 "Finalizing installation..."
+        clear_passwords >> "$LOG_FILE" 2>&1
+        
         ui_progress 100 "Installation complete!"
-    ) 2>&1 | tee -a "$LOG_FILE" | ui_progress_pipe "Installation Progress"
+    ) 3>&1 | ui_progress_pipe "Installation Progress"
+    export UI_ACTIVE=false
     
     ui_finish
 }

@@ -6,17 +6,23 @@
 # ======================================================================
 
 disk_validate() {
+    local disk="$1"
 
-    DISK="$1"
-
-    [[ -b "$DISK" ]] || error "Invalid disk device: $DISK"
-
-    if mount | grep -q "$DISK"; then
-        error "Disk already mounted: $DISK"
+    if [[ ! -b "$disk" ]]; then
+        log "ERROR" "Invalid disk device: $disk"
+        whiptail --msgbox "Error: Invalid disk device: $disk" 8 60
+        return 1
     fi
 
-    log "INFO" "Disk validated: $DISK"
-    export DISK
+    if mount | grep -q "$disk"; then
+        log "ERROR" "Disk already mounted: $disk"
+        whiptail --msgbox "Error: Disk is already mounted: $disk" 8 60
+        return 1
+    fi
+
+    log "INFO" "Disk validated: $disk"
+    export DISK="$disk"
+    return 0
 }
 
 # ======================================================================
@@ -64,6 +70,12 @@ detect_partitions() {
         ROOT_PART="${DISK}2"
     fi
 
+    if [ "${DRY_RUN:-false}" = "true" ]; then
+        log "INFO" "[DRY RUN] Simulating partitions: $BOOT_PART, $ROOT_PART"
+        export BOOT_PART ROOT_PART
+        return 0
+    fi
+
     [[ -b "$BOOT_PART" ]] || error "Boot partition not found: $BOOT_PART"
     [[ -b "$ROOT_PART" ]] || error "Root partition not found: $ROOT_PART"
 
@@ -100,15 +112,22 @@ disk_mount() {
     [ -z "${ROOT_PART:-}" ] && error "ROOT_PART not set — run disk_partition first"
     [ -z "${BOOT_PART:-}" ] && error "BOOT_PART not set — run disk_partition first"
 
-    log "INFO" "Mounting root: $ROOT_PART -> /mnt"
+    local root_to_mount="${ROOT_MAPPER:-$ROOT_PART}"
+    log "INFO" "Mounting root: $root_to_mount -> /mnt"
 
-    retry mount "$ROOT_PART" /mnt
+    retry mount "$root_to_mount" /mnt
 
-    mkdir -p /mnt/boot
+    execute mkdir -p /mnt/boot
 
     log "INFO" "Mounting boot: $BOOT_PART -> /mnt/boot"
 
     retry mount "$BOOT_PART" /mnt/boot
+
+    if [ -n "${HOME_MAPPER:-}" ]; then
+        execute mkdir -p /mnt/home
+        log "INFO" "Mounting home: $HOME_MAPPER -> /mnt/home"
+        retry mount "$HOME_MAPPER" /mnt/home
+    fi
 
     log "INFO" "Mount successful"
 }

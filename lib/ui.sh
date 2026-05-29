@@ -48,7 +48,13 @@ ui_yesno() {
 # SHOW PROGRESS BAR
 # ======================================================================
 ui_progress() {
-    echo "$1" | whiptail --gauge "$2" 6 60 0
+    local pct="$1"
+    local msg="$2"
+    log "INFO" "Progress $pct%: $msg"
+    echo "$pct" >&3
+    echo "XXX" >&3
+    echo "$msg" >&3
+    echo "XXX" >&3
 }
 
 # ======================================================================
@@ -109,11 +115,16 @@ ui_dry_run_message() {
 # SHOW COMPLETION DIALOG
 # ======================================================================
 ui_finish() {
-    whiptail --title "✅ INSTALLATION COMPLETE" --msgbox \
-        "Arch Linux installed successfully!\n\nLog: $LOG_FILE\n\nRemove media and reboot." 15 60
-    
-    if ui_yesno "Reboot now?"; then
-        reboot
+    if [ "${DRY_RUN:-false}" = "true" ]; then
+        whiptail --title "✅ DRY RUN COMPLETE" --msgbox \
+            "Dry run simulation completed successfully!\n\nLog: $LOG_FILE\n\nNo changes were made to your system." 15 60
+    else
+        whiptail --title "✅ INSTALLATION COMPLETE" --msgbox \
+            "Arch Linux installed successfully!\n\nLog: $LOG_FILE\n\nRemove media and reboot." 15 60
+        
+        if ui_yesno "Reboot now?"; then
+            reboot
+        fi
     fi
 }
 
