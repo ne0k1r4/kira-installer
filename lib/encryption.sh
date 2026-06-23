@@ -11,21 +11,21 @@ encryption_setup() {
         return 0
     fi
     
-    if ui_yesno "Hide your data from L's eyes? Enable LUKS2 encryption? (Highly recommended)"; then
+    if ui_yesno "Secure your private files, Master? Enable LUKS2 encryption? (Highly recommended! 🔐)"; then
         ENCRYPTION="luks2"
         
         if [ -z "${CRYPT_PASS:-}" ]; then
             get_password_confirm "Enter Encryption Passphrase" CRYPT_PASS
         fi
         
-        if ui_yesno "Should we construct LVM logical folders inside the vault? (LUKS+LVM)"; then
+        if ui_yesno "Should we set up LVM logical folders inside our partition? (LUKS+LVM)"; then
             ENCRYPTION="luks2+lvm"
         fi
         
-        log "INFO" "The Vault is prepared! Enabled $ENCRYPTION protection. L won't find anything here."
+        log "INFO" "Sakura Vault enabled! Enabled $ENCRYPTION encryption protection. Master's files are safe! 🌸"
     else
         ENCRYPTION="none"
-        log "INFO" "No encryption selected! Your files will remain exposed in the open world."
+        log "INFO" "No encryption selected! Master's files will remain unlocked."
     fi
     
     export ENCRYPTION
@@ -45,7 +45,7 @@ encryption_format() {
         echo "$ENCRYPTED_PART" > "$STATE_DIR/encrypted-part"
     else
         if [ -z "${CRYPT_PASS:-}" ]; then
-            log "ERROR" "Passphrase missing! Misa cannot seal the vault without a key."
+            log "ERROR" "Gomen! Passphrase is missing, I cannot lock the vault without a password! 🥺"
             return 1
         fi
     fi
@@ -56,9 +56,9 @@ encryption_format() {
                 log "ERROR" "Root partition path is missing!"
                 return 1
             fi
-            log "INFO" "Sealing root partition $ROOT_PART inside a LUKS2 vault (using argon2id)..."
+            log "INFO" "Encrypting root partition $ROOT_PART with LUKS2 (argon2id)..."
             printf "%s" "$CRYPT_PASS" | execute cryptsetup luksFormat --type luks2 --pbkdf argon2id "$ROOT_PART" -
-            log "INFO" "Unlocking LUKS vault as /dev/mapper/cryptroot..."
+            log "INFO" "Opening LUKS container as /dev/mapper/cryptroot..."
             printf "%s" "$CRYPT_PASS" | execute cryptsetup open "$ROOT_PART" cryptroot -
             ROOT_MAPPER="/dev/mapper/cryptroot"
             ENCRYPTED_PART="$ROOT_PART"
@@ -69,12 +69,12 @@ encryption_format() {
                 log "ERROR" "LVM target partition path is missing!"
                 return 1
             fi
-            log "INFO" "Sealing LVM partition $LVM_PART inside a LUKS2 vault..."
+            log "INFO" "Encrypting LVM partition $LVM_PART with LUKS2 (argon2id)..."
             printf "%s" "$CRYPT_PASS" | execute cryptsetup luksFormat --type luks2 --pbkdf argon2id "$LVM_PART" -
-            log "INFO" "Unlocking LVM vault container as /dev/mapper/cryptlvm..."
+            log "INFO" "Opening LUKS container as /dev/mapper/cryptlvm..."
             printf "%s" "$CRYPT_PASS" | execute cryptsetup open "$LVM_PART" cryptlvm -
             
-            log "INFO" "Initializing LVM groups: building the vg0 volume group..."
+            log "INFO" "Setting up LVM logical volume group 'vg0'..."
             execute pvcreate /dev/mapper/cryptlvm
             execute vgcreate vg0 /dev/mapper/cryptlvm
             
@@ -93,18 +93,18 @@ encryption_format() {
                 local total_needed=$((swap_mb + root_mb + 5))
                 
                 if [ "$vg_size_gb" -lt "$total_needed" ]; then
-                    log "WARNING" "Wait, this disk is tiny! Squeezing LVM logical volumes to fit..."
+                    log "WARNING" "Disk detected as small! Adjusting volume sizes to fit, Master."
                     root_size="15G"
                     swap_size="1G"
                 fi
             fi
             
-            log "INFO" "Carving LVM sectors (swap=$swap_size, root=$root_size, home=remaining)..."
+            log "INFO" "Creating logical volumes (swap=$swap_size, root=$root_size, home=remaining)..."
             execute lvcreate -L "$swap_size" vg0 -n swap
             execute lvcreate -L "$root_size" vg0 -n root
             execute lvcreate -l 100%FREE vg0 -n home
             
-            log "INFO" "Initializing swap space (Misa's scratchpad)..."
+            log "INFO" "Formatting LVM swap volume..."
             execute mkswap /dev/vg0/swap
             execute swapon /dev/vg0/swap
             
@@ -117,21 +117,21 @@ encryption_format() {
     
     # Run formatting across mapped directories
     if [ -n "${BOOT_PART:-}" ]; then
-        log "INFO" "Formatting EFI Boot partition ($BOOT_PART) as FAT32..."
+        log "INFO" "Formatting boot partition ($BOOT_PART) as FAT32..."
         execute mkfs.fat -F32 "$BOOT_PART"
     fi
     if [ -n "${ROOT_MAPPER:-}" ]; then
-        log "INFO" "Formatting Root partition ($ROOT_MAPPER) as EXT4..."
+        log "INFO" "Formatting root volume ($ROOT_MAPPER) as EXT4..."
         execute mkfs.ext4 -F "$ROOT_MAPPER"
     fi
     if [ -n "${HOME_MAPPER:-}" ]; then
-        log "INFO" "Formatting Home partition ($HOME_MAPPER) as EXT4..."
+        log "INFO" "Formatting home volume ($HOME_MAPPER) as EXT4..."
         execute mkfs.ext4 -F "$HOME_MAPPER"
     fi
     
     echo "$ENCRYPTED_PART" > "$STATE_DIR/encrypted-part"
     export ROOT_MAPPER SWAP_MAPPER HOME_MAPPER ENCRYPTED_PART
-    log "INFO" "The vaults are locked and formatted successfully, Lord Kira."
+    log "INFO" "Sakura Vault formats successfully completed, Master! 🌸"
 }
 # luks fix
 # luks fix

@@ -34,17 +34,17 @@ bootloader_install() {
         local encrypted_part
         encrypted_part=$(cat "$STATE_DIR/encrypted-part" 2>/dev/null)
         [ -z "$encrypted_part" ] && [ -n "${ENCRYPTED_PART:-}" ] && encrypted_part="$ENCRYPTED_PART"
-        [ -z "$encrypted_part" ] && log "ERROR" "Misa couldn't determine the encrypted partition name! Where's the vault?" && return 1
+        [ -z "$encrypted_part" ] && log "ERROR" "Oops! I couldn't determine the encrypted partition name! 🥺" && return 1
         uuid=$(blkid -s UUID -o value "$encrypted_part" 2>/dev/null)
-        [ -z "$uuid" ] && log "ERROR" "Failed to grab UUID signature for $encrypted_part!" && return 1
+        [ -z "$uuid" ] && log "ERROR" "Failed to fetch UUID signature for $encrypted_part!" && return 1
     else
         uuid=$(blkid -s UUID -o value "$ROOT_PART" 2>/dev/null)
-        [ -z "$uuid" ] && log "ERROR" "Failed to grab UUID signature for root $ROOT_PART!" && return 1
+        [ -z "$uuid" ] && log "ERROR" "Failed to fetch UUID signature for root $ROOT_PART!" && return 1
     fi
     
     local target_mode
     target_mode=$(bootloader_target_mode "/mnt")
-    log "INFO" "Shinigami Eyes detected boot mode: $target_mode"
+    log "INFO" "Detected boot mode: $target_mode"
     
     if [ "$target_mode" = "uefi" ]; then
         _bootloader_install_systemd "$uuid"
@@ -70,7 +70,7 @@ _bootloader_install_systemd() {
     fi
     
     if [ "${DRY_RUN:-false}" = "true" ]; then
-        log "INFO" "[DRY RUN] Simulating bootctl installation and systemd-boot entry writing..."
+        log "INFO" "[DRY RUN] Simulating systemd-boot installation..."
     else
         mkdir -p /mnt/boot/loader/entries
         cat > /mnt/boot/loader/entries/arch.conf << EOF
@@ -115,12 +115,12 @@ _bootloader_install_grub() {
     fi
     
     if [ "${DRY_RUN:-false}" = "true" ]; then
-        log "INFO" "[DRY RUN] Simulating GRUB compilation and bootloader install..."
+        log "INFO" "[DRY RUN] Simulating GRUB installation..."
     else
         [ -n "$grub_cmdline" ] && chroot_exec "/mnt" "sed -i 's|GRUB_CMDLINE_LINUX=\"\"|GRUB_CMDLINE_LINUX=\"$grub_cmdline\"|' /etc/default/grub"
         
         if [ "$INSTALL_MODE" = "dual" ]; then
-            log "INFO" "Parallel realm configuration! Dual boot mode active, enabling os-prober."
+            log "INFO" "Dual boot detected! Enabling os-prober configuration."
             chroot_exec "/mnt" "
                 echo 'GRUB_DISABLE_OS_PROBER=false' >> /etc/default/grub
             "

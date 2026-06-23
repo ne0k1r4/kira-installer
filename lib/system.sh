@@ -11,15 +11,15 @@ system_detect_gpu() {
     
     if echo "$devices" | grep -q "nvidia"; then
         GPU_DRIVERS+=("nvidia" "nvidia-utils")
-        log "INFO" "Shinigami Eyes spotted an NVIDIA GPU! Preparing proprietary drivers..."
+        log "INFO" "Found an NVIDIA GPU! Preparing proprietary drivers for Master..."
     fi
     if echo "$devices" | grep -q "amd"; then
         GPU_DRIVERS+=("xf86-video-amdgpu" "vulkan-radeon")
-        log "INFO" "Shinigami Eyes spotted an AMD GPU! Preparing Radeon packages..."
+        log "INFO" "Found an AMD GPU! Preparing Radeon packages for Master..."
     fi
     if echo "$devices" | grep -q "intel"; then
         GPU_DRIVERS+=("xf86-video-intel" "vulkan-intel")
-        log "INFO" "Shinigami Eyes spotted an Intel GPU! Preparing internal graphics modules..."
+        log "INFO" "Found an Intel GPU! Preparing internal graphics modules for Master..."
     fi
     
     if [ ${#GPU_DRIVERS[@]} -eq 0 ]; then
@@ -57,7 +57,7 @@ system_install_base() {
     
     packages+=("networkmanager" "hyprland" "kitty" "waybar" "wofi" "xdg-desktop-portal-hyprland" "sddm" "qt5-wayland" "qt6-wayland" "polkit-kde-agent")
     
-    log "INFO" "Misa is pacstrapping base packages: ${packages[*]}. Grab a potato chip and eat it! 🥔"
+    log "INFO" "Pacstrapping base packages: ${packages[*]}... Grab a snack, Master! 🍰"
     execute pacstrap /mnt "${packages[@]}"
 }
 
@@ -106,7 +106,7 @@ EOF
     elif [ -f /etc/timezone ]; then
         timezone=$(cat /etc/timezone || echo "UTC")
     fi
-    log "INFO" "Spotted host location: $timezone. Injecting it to the new realm."
+    log "INFO" "Detected host timezone: $timezone. Applying it to the new system, Master."
 
     chroot_exec "/mnt" "
         ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
@@ -146,7 +146,7 @@ input {
     }
 }
 
-# Misa's hot-pink aesthetic borders! Pink borders represent our absolute bond.
+# Waifu-OS hot-pink active window border! 🌸
 general {
     gaps_in = 5
     gaps_out = 10
@@ -191,7 +191,7 @@ misc {
     background_color = 0x11111b
 }
 
-# Kira's master keybindings
+# Master keybindings
 $mainMod = SUPER
 
 bind = $mainMod, Q, exec, kitty
@@ -309,16 +309,10 @@ EOF
             sed -i '/^Color/a ILoveCandy' /mnt/etc/pacman.conf
         fi
         sed -i 's/^#ParallelDownloads.*/ParallelDownloads = 5/' /mnt/etc/pacman.conf
-        log "INFO" "Sweetened target pacman.conf! Activated ParallelDownloads=5, Color, and ILoveCandy! 🍬"
+        log "INFO" "Sweetened target pacman.conf! Enabled ParallelDownloads=5, Color, and ILoveCandy! 🍬"
     fi
 
     system_configure_mkinitcpio
-}
-# mirrorlist 2026
-# mirrorlist 2026
-# gpu detection
-# zsh default
-# hyprland
 # microcode fix
 # dotfiles
 # neovim

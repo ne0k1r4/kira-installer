@@ -15,9 +15,9 @@ log() {
     
     local sym
     case "$level" in
-        ERROR)   sym="[❌ DEATH]" ;;
-        WARNING) sym="[🍎 RYUK]" ;;
-        INFO)    sym="[📓 MISA]" ;;
+        ERROR)   sym="[💔 GOMEN]" ;;
+        WARNING) sym="[⚠️ BAKA]" ;;
+        INFO)    sym="[🌸 WAIFU]" ;;
         *)       sym="[$level]" ;;
     esac
 
@@ -27,7 +27,7 @@ log() {
         case "$level" in
             ERROR)   echo -e "\033[0;31m$sym\033[0m $message" ;;
             WARNING) echo -e "\033[1;33m$sym\033[0m $message" ;;
-            INFO)    echo -e "\033[0;35m$sym\033[0m $message" ;; # Hot pink/magenta console output
+            INFO)    echo -e "\033[0;35m$sym\033[0m $message" ;; # Sakura pink console output
             *)       echo "$sym $message" ;;
         esac
     fi
@@ -43,7 +43,7 @@ error() {
 # ======================================================================
 retry() {
     if [ "${DRY_RUN:-false}" = "true" ]; then
-        log "INFO" "[DRY RUN] Misa is simulating success for: $*"
+        log "INFO" "[DRY RUN] Simulating success for: $*"
         return 0
     fi
     local attempts=5
@@ -52,9 +52,9 @@ retry() {
     until "$@"; do
         ((count++))
         if ((count >= attempts)); then
-            error "Even my Shinigami eyes couldn't see this command succeed after $attempts tries: $*"
+            error "Gomen! I tried my best, but this command keeps failing after $attempts attempts: $*"
         fi
-        log "WARNING" "Blocked! Retrying that execution (attempt $count/$attempts): $*"
+        log "WARNING" "Oops! That didn't work. Retrying, please wait (attempt $count/$attempts): $*"
         sleep 2
     done
 }
@@ -113,13 +113,13 @@ get_password_confirm() {
     
     while true; do
         get_password "$prompt" pass1
-        get_password "Confirm $prompt (Write it again, Lord Kira!)" pass2
+        get_password "Confirm $prompt (Write it again, Master!)" pass2
         
         if [ "$pass1" = "$pass2" ] && [ -n "$pass1" ]; then
             set_var "$var_name" "$pass1"
             break
         else
-            whiptail --msgbox "The keys don't match, or you wrote nothing! Please try again, Lord Kira." 8 60
+            whiptail --msgbox "Baka! The passwords don't match or are empty. Please write them carefully, Master!" 8 60
         fi
     done
     unset pass1 pass2
@@ -127,5 +127,5 @@ get_password_confirm() {
 
 clear_passwords() {
     unset CRYPT_PASS USERPASS
-    log "INFO" "Secrets successfully swept and wiped from memory! No trace left."
+    log "INFO" "Secrets successfully wiped from memory! No trace left."
 }

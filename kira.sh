@@ -209,16 +209,16 @@ main() {
     else
         while true; do
             local choice
-            choice=$(whiptail --title "📓 Misa's Devotion: Main Menu 📓" --menu "Select your next action, Lord Kira:" 15 60 4 \
-                "1" "Build Kira's New World (Install Arch)" \
+            choice=$(whiptail --title "🌸 Waifu-OS Setup Menu 🌸" --menu "Select your next action, Master:" 15 60 4 \
+                "1" "Build Our New Home (Install Arch)" \
                 "2" "Choose Target Disk (Select Device)" \
-                "3" "Configure Shinigami Vault (Encryption)" \
-                "4" "Abandon the Notebook (Exit)" 3>&1 1>&2 2>&3) || choice="4"
+                "3" "Configure Sakura Vault (Encryption)" \
+                "4" "Say Goodbye (Exit)" 3>&1 1>&2 2>&3) || choice="4"
             
             case "$choice" in
                 "1")
                     if [ -z "${SELECTED_DISK:-}" ]; then
-                        whiptail --msgbox "Error: You must assign a Target Disk before building the world!" 8 60
+                        whiptail --msgbox "Error: You must choose a Target Disk before building our home, Master!" 8 60
                         continue
                     fi
                     break
@@ -231,7 +231,7 @@ main() {
                     if [ -n "$target" ]; then
                         if disk_validate "$target"; then
                             if [ "${NO_CONFIRM:-false}" != "true" ]; then
-                                if ui_yesno "⚠️ WARNING: This will WIPE ALL DATA on $target. Purge this disk?"; then
+                                if ui_yesno "⚠️ WARNING: This will WIPE ALL DATA on $target. Continue, Master?"; then
                                     SELECTED_DISK="$target"
                                     export SELECTED_DISK
                                 fi
@@ -253,8 +253,8 @@ main() {
         done
     fi
     
-    [ -z "${HOSTNAME:-}" ] && HOSTNAME=$(ui_input "What name shall we give this new realm? (Hostname)" "kira-arch") && export HOSTNAME
-    [ -z "${USERNAME:-}" ] && USERNAME=$(ui_input "Under what master identity shall you rule? (Username)" "") && export USERNAME
+    [ -z "${HOSTNAME:-}" ] && HOSTNAME=$(ui_input "What name shall we give our system? (Hostname)" "kira-arch") && export HOSTNAME
+    [ -z "${USERNAME:-}" ] && USERNAME=$(ui_input "Under what username shall you register? (Username)" "") && export USERNAME
     
     if [ -z "${USERPASS:-}" ]; then
         get_password_confirm "Enter password for root/user" USERPASS
@@ -269,22 +269,22 @@ main() {
     
     export UI_ACTIVE=true
     (
-        ui_progress 10 "Misa is carving partition spaces... 👁️"
+        ui_progress 10 "Carving partition spaces on disk... 🌸"
         disk_partition >> "$LOG_FILE" 2>&1
         
         ui_progress 20 "Mirror sweep: locating sweet and fast mirrors... 🍬"
         ui_optimize_mirrors >> "$LOG_FILE" 2>&1
         
-        ui_progress 30 "LUKS encryption: forging the vaults... 🔐"
+        ui_progress 30 "Sakura Vault encryption: building the lock containers... 🔐"
         encryption_format >> "$LOG_FILE" 2>&1
         
         ui_progress 45 "Mounting workspaces: attaching layout directories..."
         disk_mount >> "$LOG_FILE" 2>&1
         
-        ui_progress 55 "Installing packages... Grab a potato chip! 🥔 (this might take a few minutes)"
+        ui_progress 55 "Installing packages... Grab a snack, Master! 🍰 (this might take a few minutes)"
         system_install_base >> "$LOG_FILE" 2>&1
         
-        ui_progress 75 "Constructing layout configurations (writing fstab indexes)..."
+        ui_progress 75 "Constructing layout configurations (writing fstab)..."
         if [ "${DRY_RUN:-false}" = "true" ]; then
             log "INFO" "[DRY RUN] Would execute: genfstab -U /mnt >> /mnt/etc/fstab"
         else
@@ -294,13 +294,13 @@ main() {
         ui_progress 85 "Reforming environment details (locales, hostname, users)..."
         system_configure >> "$LOG_FILE" 2>&1
         
-        ui_progress 95 "Installing bootloader: summoning systemd-boot/GRUB... 👑"
+        ui_progress 95 "Installing bootloader: summoning systemd-boot/GRUB... 🌸"
         bootloader_install >> "$LOG_FILE" 2>&1
         
         ui_progress 98 "Polishing directories and clearing temporary secrets..."
         clear_passwords >> "$LOG_FILE" 2>&1
         
-        ui_progress 100 "Kira's world is constructed! Complete! 🎉"
+        ui_progress 100 "Our system is constructed! Complete! 🎉"
     ) 3>&1 | ui_progress_pipe "Installation Progress"
     export UI_ACTIVE=false
     
@@ -311,7 +311,7 @@ main() {
 # START
 # ======================================================================
 if [ "$EUID" -ne 0 ]; then
-    echo "Even Kira needs root privileges to build a new world. Run with sudo."
+    echo "Root privileges are required to build our home, Master! Run with sudo."
     exit 1
 fi
 

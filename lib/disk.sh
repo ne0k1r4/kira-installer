@@ -9,18 +9,18 @@ disk_validate() {
     local disk="$1"
 
     if [[ ! -b "$disk" ]]; then
-        log "ERROR" "Disk device doesn't exist: $disk. Is that a fake identity?"
-        whiptail --msgbox "Error: Disk $disk does not exist! Did you write the name down incorrectly, Lord Kira?" 8 60
+        log "ERROR" "Disk device doesn't exist: $disk. Did you write it down wrong, Master? 🥺"
+        whiptail --msgbox "Error: Disk $disk does not exist! Please check the spelling, Master!" 8 60
         return 1
     fi
 
     if mount | grep -q "$disk"; then
-        log "ERROR" "Disk is currently in use: $disk. Free it from its duties before we claim it."
-        whiptail --msgbox "Error: Disk $disk is active and mounted! Free it from its bindings before writing its name in the notebook." 8 60
+        log "ERROR" "Disk is currently in use: $disk. Please unmount it so I can format it, Master!"
+        whiptail --msgbox "Error: Disk $disk is active and mounted! Please unmount it first, Master!" 8 60
         return 1
     fi
 
-    log "INFO" "Target disk validated: $disk. Its fate is sealed. A clean slate for our new world."
+    log "INFO" "Target disk validated: $disk. Ready to write our files here, Master! 🌸"
     export DISK="$disk"
     return 0
 }
@@ -29,34 +29,34 @@ disk_validate() {
 # DISK PARTITIONER (Writing partition segments)
 # ======================================================================
 disk_partition() {
-    log "INFO" "Drawing a line through all signatures... purging all memory on $DISK."
+    log "INFO" "Wiping all existing signatures on $DISK... clearing the slate! 🧹"
     retry wipefs -af "$DISK"
 
     local boot_mode="bios"
     if [ -d /sys/firmware/efi ]; then
         boot_mode="uefi"
     fi
-    log "INFO" "Shinigami Eyes identified boot mode: $boot_mode"
+    log "INFO" "Detected boot environment: $boot_mode"
 
     if [ "$boot_mode" = "uefi" ]; then
-        log "INFO" "Signing a clean GPT covenant onto $DISK..."
+        log "INFO" "Writing a clean GPT label onto $DISK..."
         retry parted -s "$DISK" mklabel gpt
-        log "INFO" "Carving out the 512MiB EFI Temple..."
+        log "INFO" "Creating 512MiB EFI Boot partition..."
         retry parted -s "$DISK" mkpart ESP fat32 1MiB 513MiB
         retry parted -s "$DISK" set 1 esp on
-        log "INFO" "Reserving the remaining domain of the drive for the Root empire..."
+        log "INFO" "Allocating remaining disk space for the Root partition..."
         retry parted -s "$DISK" mkpart primary ext4 513MiB 100%
     else
-        log "INFO" "Carving an MBR (msdos) seal onto legacy drive $DISK..."
+        log "INFO" "Writing an MBR (msdos) label onto legacy drive $DISK..."
         retry parted -s "$DISK" mklabel msdos
-        log "INFO" "Erecting a 512MiB Boot gateway..."
+        log "INFO" "Creating 512MiB active Boot partition..."
         retry parted -s "$DISK" mkpart primary fat32 1MiB 513MiB
         retry parted -s "$DISK" set 1 boot on
-        log "INFO" "Reserving the remaining domain of the drive for the Root empire..."
+        log "INFO" "Allocating remaining disk space for the Root partition..."
         retry parted -s "$DISK" mkpart primary ext4 513MiB 100%
     fi
 
-    log "INFO" "Whispering the partition changes to the kernel..."
+    log "INFO" "Informing the kernel of partition updates..."
     sleep 2
     partprobe "$DISK"
     udevadm settle
@@ -86,25 +86,25 @@ detect_partitions() {
         return 0
     fi
 
-    [[ -b "$BOOT_PART" ]] || error "Misa couldn't find the boot partition path: $BOOT_PART! Where did it go?"
-    [[ -b "$ROOT_PART" ]] || error "Misa couldn't find the root partition path: $ROOT_PART!"
+    [[ -b "$BOOT_PART" ]] || error "Oops! I couldn't locate the boot partition: $BOOT_PART! 🥺"
+    [[ -b "$ROOT_PART" ]] || error "Oops! I couldn't locate the root partition: $ROOT_PART! 🥺"
 
     export BOOT_PART ROOT_PART
-    log "INFO" "Discovered boot path: $BOOT_PART"
-    log "INFO" "Discovered root path: $ROOT_PART"
+    log "INFO" "Found boot path: $BOOT_PART"
+    log "INFO" "Found root path: $ROOT_PART"
 }
 
 # ======================================================================
 # FILE SYSTEM FORMATTER (Wiping the slate clean)
 # ======================================================================
 disk_format() {
-    [ -z "${BOOT_PART:-}" ] && error "The boot partition has gone missing! Did you run partitioning first, Lord Kira?"
-    [ -z "${ROOT_PART:-}" ] && error "The root partition is gone! Run partitioning first."
+    [ -z "${BOOT_PART:-}" ] && error "The boot partition is missing! Did you run partitioning first, Master?"
+    [ -z "${ROOT_PART:-}" ] && error "The root partition is gone! Run partitioning first, Master."
 
-    log "INFO" "Washing boot partition $BOOT_PART in clean FAT32 water..."
+    log "INFO" "Formatting boot partition $BOOT_PART as FAT32..."
     retry mkfs.fat -F32 "$BOOT_PART"
 
-    log "INFO" "Establishing root partition $ROOT_PART as EXT4 ground..."
+    log "INFO" "Formatting root partition $ROOT_PART as EXT4..."
     retry mkfs.ext4 -F "$ROOT_PART"
 }
 
@@ -116,23 +116,23 @@ disk_mount() {
     [ -z "${BOOT_PART:-}" ] && error "Boot partition is missing! Run partitioning first."
 
     local root_to_mount="${ROOT_MAPPER:-$ROOT_PART}"
-    log "INFO" "Binding root workspace: $root_to_mount -> /mnt"
+    log "INFO" "Mounting root workspace: $root_to_mount -> /mnt"
     retry mount "$root_to_mount" /mnt
 
-    log "INFO" "Creating gate: /mnt/boot..."
+    log "INFO" "Creating mount directory: /mnt/boot..."
     execute mkdir -p /mnt/boot
 
-    log "INFO" "Binding boot gateway: $BOOT_PART -> /mnt/boot"
+    log "INFO" "Mounting boot volume: $BOOT_PART -> /mnt/boot"
     retry mount "$BOOT_PART" /mnt/boot
 
     if [ -n "${HOME_MAPPER:-}" ]; then
-        log "INFO" "Creating home quarters: /mnt/home..."
+        log "INFO" "Creating mount directory: /mnt/home..."
         execute mkdir -p /mnt/home
-        log "INFO" "Binding home quarters: $HOME_MAPPER -> /mnt/home"
+        log "INFO" "Mounting home volume: $HOME_MAPPER -> /mnt/home"
         retry mount "$HOME_MAPPER" /mnt/home
     fi
 
-    log "INFO" "Mounting complete! The directory bones are in place, Lord Kira."
+    log "INFO" "Mounting complete! Our directory folders are all set up, Master! 🌸"
 }
 # partition refresh
 # swap skip
