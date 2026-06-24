@@ -15,9 +15,9 @@ log() {
     
     local sym
     case "$level" in
-        ERROR)   sym="[💔 GOMEN]" ;;
-        WARNING) sym="[⚠️ BAKA]" ;;
-        INFO)    sym="[🌸 WAIFU]" ;;
+        ERROR)   sym="[💔 GOMEN] (｡•́︿•̀｡)" ;;
+        WARNING) sym="[⚠️ BAKA] ( >﹏< )" ;;
+        INFO)    sym="[🌸 WAIFU] (✿◠‿◠)" ;;
         *)       sym="[$level]" ;;
     esac
 

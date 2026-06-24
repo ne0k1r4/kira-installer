@@ -28,16 +28,16 @@ export NEWT_COLORS='
 # ======================================================================
 ui_show_banner() {
     whiptail --title "🌸 ARCH LINUX WAIFU INSTALLER 🌸" --msgbox "
-    🌸 Welcome back, Master! I'm so happy to help you! 🌸
-    
-    \"I'll do anything to build your dream system, Master! 
-     Let me set up your workspaces and make them perfect!\"
+    (✿◠‿◠)  Welcome back, Master! I'm so happy to help you! 
+
+    (｡♥‿♥｡)  \"I'll do anything to build your dream system, Master!
+             Let me set up your workspaces and make them perfect!\"
      
-    - Your Devoted Assistant: WAIFU-OS TUI 🎀
-    - Script Version: $VERSION
-    - Sandbox State: $([ "$DRY_RUN" = "true" ] && echo "🌸 DRY RUN (Master's Playground)" || echo "🌸 LIVE DEPLOYMENT ACTIVE")
+    • Your Devoted Assistant: WAIFU-OS TUI 🎀
+    • Version: $VERSION
+    • Sandbox State: $([ "$DRY_RUN" = "true" ] && echo "🌸 DRY RUN (Master's Playground)" || echo "🌸 LIVE DEPLOYMENT ACTIVE")
     
-    Are you ready to build our new home?" 20 72
+    Are you ready to build our new home?  ฅ^•ﻌ•^ฅ" 16 72
 }
 
 # ======================================================================

@@ -1,55 +1,28 @@
-# 🌸 WAIFU ARCH INSTALLER
+# 🌸 Waifu Arch Installer
 
-Waifu Arch Installer is an automated, themed Arch Linux setup helper. Acting as your devoted desktop assistant, it guides you through partitioning, locks down volumes with argon2id Sakura Vault encryption, and configures a beautiful, glassmorphic Hyprland Wayland workspace under your Master direction.
+A simple, devoted, and cute Arch Linux installation script. It automates partitioning, sets up secure LUKS2 volume encryption (the Sakura Vault), and installs a clean Hyprland Wayland environment with a gorgeous hot-pink look.
 
-## ⚡ Features
+## 🎀 Quick Start
 
-- **Pure Devotion (Zero Bloat):** Wipes target disks completely and installs only what you authorize.
-- **Sakura Vaults (LUKS2 + LVM):** Implements physical volume encryption via `argon2id`.
-- **Sakura Whiptail TUI:** Sleek, pink-accented dialog menus for disk selection and credentials.
-- **Hardware Configured:** Auto-detects system CPU microcode and multi-GPU configurations.
-- **Sweet Pacman Feeds:** Parallel downloads and Candy progress bars because she loves sweets! 🍬
+Just run this on the Arch Live ISO:
 
-## 🚀 Execution Guide
-
-### 1. Network Prep
-Ensure you have active internet connectivity:
 ```bash
-ping archlinux.org -c 3
-```
-
-### 2. Retrieve the Assistant
-Clone the script repository and set permissions:
-```bash
+# 1. Grab the script
 git clone https://github.com/ne0k1r4/kira-installer.git
 cd kira-installer
 chmod +x kira.sh
-```
 
-### 3. Deploy
-Execute the installer with root privileges:
-```bash
+# 2. Run the assistant!
 sudo ./kira.sh
 ```
 
-## 🧠 Automated Deployment (Preseed)
+## 🛠️ Options
+- **Preseed Mode:** Run silently using a preseed config: `sudo ./kira.sh --preseed preseed/production.conf` (remember to set `AUTO=true` to skip prompts!).
+- **Dry Run:** Simulate a run safely without touching your disk: `sudo ./kira.sh --dry-run`
 
-Bypass TUI dialogs and execute silent installations using `.conf` files:
-```bash
-sudo ./kira.sh --preseed preseed/production.conf
-```
-*Set `AUTO=true` in your preseed configuration to skip all confirmation prompts.*
-
-## 🧩 Architecture
-
-- **`kira.sh`** — Master orchestrator and deployment coordinator.
-- **`lib/common.sh`** — **The Ledger** (Waifu logs, retry helper, and password wipes).
-- **`lib/ui.sh`** — **The Face** (Sakura pink Whiptail interface and progress pipes).
-- **`lib/disk.sh`** — **The Architect** (Carving partition slots and mounting workspaces).
-- **`lib/encryption.sh`** — **The Sakura Vault** (LUKS2 containerization and LVM setups).
-- **`lib/system.sh`** — **The Heart** (Timezone, user credentials, package sets, and Hyprland styling).
-- **`lib/bootloader.sh`** — **The Gateway** (UEFI Systemd-boot and BIOS GRUB setup).
-
----
-
-⚠️ **WARNING:** Running this script **WILL PERMANENTLY ERASE ALL DATA** on the selected disk. Proceed with absolute caution.
+## 🧩 Structure
+- `kira.sh` — The brain.
+- `lib/ui.sh` — The cute Whiptail TUI.
+- `lib/common.sh` — Colored console logs (`[🌸 WAIFU]`, `[⚠️ BAKA]`, `[💔 GOMEN]`).
+- `lib/disk.sh` & `lib/encryption.sh` — Partitioning, mounts, and LUKS configurations.
+- `lib/system.sh` & `lib/bootloader.sh` — Package installation, timezone syncing, and boot manager.
